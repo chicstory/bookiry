@@ -1814,14 +1814,18 @@ async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
   const banner = document.getElementById('aiSparksBanner');
   const bannerText = document.getElementById('aiSparksBannerText');
 
-  // If no Gemini key is set, show a gentle invitation banner in sanctuary
+  // If no Gemini key is set, show a gentle clickable invitation banner in sanctuary
   if (!apiKey) {
     if (banner && bannerText) {
-      bannerText.innerHTML = `💡 Connect your free Gemini API key in <strong>⚙️ Settings</strong> to unlock deep, book-specific Socratic questions.`;
+      bannerText.innerHTML = `<span>💡 Connect your free Gemini API key in <strong>⚙️ Settings</strong> to unlock deep, book-specific Socratic questions.</span> <button type="button" class="btn-banner-settings" id="btnBannerOpenSettings">Set Key ➔</button>`;
       banner.style.display = 'flex';
       banner.style.background = '#F8FAFC';
       banner.style.borderColor = '#CBD5E1';
       banner.style.color = '#475569';
+      banner.style.cursor = 'pointer';
+      banner.onclick = () => {
+        openSettingsModal();
+      };
     }
     return;
   }
@@ -2213,7 +2217,13 @@ function updateAuthUI() {
     if (isAuth) {
       btnGoogleAuthNav.style.display = 'none';
       userProfileBadge.style.display = 'inline-flex';
-      if (userEmailText) userEmailText.textContent = user.email || 'reader@gmail.com';
+      if (userEmailText) {
+        const shortName = (user.name && user.name !== 'Reader') 
+          ? user.name 
+          : (user.email ? user.email.split('@')[0] : 'Synced');
+        userEmailText.textContent = shortName;
+        userEmailText.title = `Connected: ${user.email || ''}`;
+      }
       if (userAvatarText) {
         const initial = user.name ? user.name[0] : (user.email ? user.email[0] : 'R');
         userAvatarText.textContent = initial.toUpperCase();
