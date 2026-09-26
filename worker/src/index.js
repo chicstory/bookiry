@@ -28,6 +28,16 @@ export default {
       });
     }
 
+    // Diagnostic route to list all allowed models
+    if (url.pathname === '/models') {
+      const apiKey = env.GEMINI_API_KEY;
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      const data = await res.json();
+      return new Response(JSON.stringify(data), {
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' }
+      });
+    }
+
     // 3. Sparks Generation Endpoint: POST /api/sparks
     if (url.pathname === '/api/sparks' && request.method === 'POST') {
       try {
@@ -75,8 +85,7 @@ export default {
  * Call Gemini Flash API with structured JSON output
  */
 async function generateSparksWithGemini(title, author, synopsis, compass, customIntent, apiKey) {
-  const modelName = 'gemini-2.0-flash';
-  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+  const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
   const prompt = `You are the master curator of Bookiry (Intentional 1:1 Reading Compass).
 A reader is about to open the book "${title}" by ${author || 'Unknown Author'}.
@@ -103,9 +112,7 @@ Strict Output Rules:
 - Do not use markdown backticks, just valid parseable JSON.`;
 
   const requestBody = {
-    contents: [{
-      parts: [{ text: prompt }]
-    }],
+    contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       temperature: 0.7,
       topP: 0.95,
@@ -113,24 +120,32 @@ Strict Output Rules:
     }
   };
 
-  const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody)
-  });
+  let lastError = null;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+  for (const model of candidateModels) {
+    try {
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          return JSON.parse(cleaned);
+        }
+      } else {
+        const errorText = await response.text();
+        lastError = new Error(`Gemini API error [${model}] (${response.status}): ${errorText}`);
+      }
+    } catch (err) {
+      lastError = err;
+    }
   }
 
-  const data = await response.json();
-  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!rawText) {
-    throw new Error('Empty response from Gemini API');
-  }
-
-  // Parse structured JSON
-  const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
-  return JSON.parse(cleaned);
+  throw lastError || new Error('All candidate models failed');
 }
