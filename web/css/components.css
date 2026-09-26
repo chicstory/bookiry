@@ -124,13 +124,13 @@
     height: 52px;
   }
   .header-inner {
-    padding: 0 8px;
-    gap: 4px;
+    padding: 0 10px;
+    gap: 6px;
     justify-content: space-between;
   }
   .brand-logo {
-    font-size: 0.98rem;
-    gap: 5px;
+    font-size: 1rem;
+    gap: 6px;
     flex-shrink: 0;
   }
   .brand-icon-wrap {
@@ -138,37 +138,32 @@
     height: 24px;
   }
   .nav-menu {
-    gap: 4px;
-    flex-shrink: 1;
-    overflow: visible;
+    gap: 5px;
+    flex-shrink: 0;
     align-items: center;
   }
+  /* Ultra-compact button styling on mobile */
   .btn-nav {
-    padding: 0 6px;
+    padding: 0 7px;
+    font-size: 0.78rem;
+    min-height: 32px;
+    height: 32px;
+  }
+  .btn-google-nav {
+    padding: 0 8px;
     font-size: 0.76rem;
     min-height: 32px;
     height: 32px;
-    gap: 2px;
-  }
-  .btn-google-nav {
-    padding: 0 6px;
-    font-size: 0.74rem;
-    min-height: 32px;
-    height: 32px;
     gap: 4px;
   }
-  .btn-google-text {
-    display: inline;
-    font-size: 0.72rem;
-  }
-  /* Clear Login Status Badge on Mobile */
+  /* Compact Circular Login Status Badge on Mobile: Never overflow */
   .user-profile-badge {
-    padding: 2px 6px 2px 2px;
+    padding: 3px 6px 3px 3px !important;
     gap: 4px;
-    background: #ECFDF5;
-    border: 1px solid #10B981;
+    background: #ECFDF5 !important;
+    border: 1.5px solid #10B981 !important;
     border-radius: var(--radius-full);
-    display: inline-flex;
+    display: inline-flex !important;
     align-items: center;
     cursor: pointer;
   }
@@ -176,47 +171,56 @@
     width: 24px;
     height: 24px;
     font-size: 0.72rem;
-    background: #10B981;
+    background: #10B981 !important;
   }
-  /* Mobile friendly login indicator */
   .user-email-text {
-    display: inline !important;
-    font-size: 0.72rem;
-    color: #065F46;
-    font-weight: 700;
-    max-width: 60px; /* Show truncated user ID cleanly */
+    display: none !important; /* Hide email on mobile to leave plenty of room for Settings gear */
   }
   .btn-logout-mini {
-    font-size: 1rem;
+    font-size: 1.05rem;
     padding: 0 2px;
     color: #059669;
+    line-height: 1;
   }
   .btn-settings-nav {
-    padding: 0 7px;
+    padding: 0 8px !important;
     min-height: 32px;
     height: 32px;
-    font-size: 0.95rem;
+    font-size: 1rem;
     flex-shrink: 0;
-    background: var(--bg-surface-soft);
+    background: #F1F5F9;
+    border: 1px solid #CBD5E1;
   }
 
-  /* Reading Sanctuary Top Bar & Pills */
+  /* Reading Sanctuary Top Bar: Mobile 2-Tier Stack */
   .sanctuary-top-bar {
-    gap: 8px;
-    margin-bottom: 16px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
   }
-  .active-actions-bar {
-    gap: 6px;
+  .sanctuary-top-bar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+  }
+  /* Action pills: 2x2 Clean Grid on Mobile, Zero Overflow */
+  .active-actions-bar {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
   }
   .btn-action-pill {
-    min-height: 32px;
-    height: 32px;
-    padding: 0 9px;
-    font-size: 0.76rem;
-    gap: 4px;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 10px !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
@@ -226,14 +230,7 @@
     gap: 3px;
   }
   .brand-logo span {
-    display: none; /* Show only bunny icon on ultra-small screens */
-  }
-  .btn-nav {
-    padding: 0 4px;
-    font-size: 0.72rem;
-  }
-  .user-email-text {
-    display: none !important;
+    display: none; /* Show only bunny icon on ultra-narrow phones */
   }
 }
 
