@@ -1901,6 +1901,7 @@ async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
       banner.style.display = 'none';
     }
   }
+}
 
 
 // Generate contextual 4 sparks for any custom book (Incorporates Custom Intent)
