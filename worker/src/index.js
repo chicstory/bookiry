@@ -75,7 +75,7 @@ export default {
  * Call Gemini Flash API with structured JSON output
  */
 async function generateSparksWithGemini(title, author, synopsis, compass, customIntent, apiKey) {
-  const modelName = 'gemini-2.5-flash';
+  const modelName = 'gemini-2.0-flash';
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
   const prompt = `You are the master curator of Bookiry (Intentional 1:1 Reading Compass).
