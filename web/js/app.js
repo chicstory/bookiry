@@ -468,24 +468,67 @@ function initSynthesisSimulator() {
   const synthBtn = document.getElementById('demoSynthesizeBtn');
   const resultCard = document.getElementById('demoResultCard');
 
+  let activeRecognition = null;
   let isRecording = false;
 
   if (micBtn && memoInput) {
     micBtn.addEventListener('click', () => {
-      isRecording = !isRecording;
-      if (isRecording) {
-        micBtn.classList.add('recording');
-        memoInput.placeholder = 'Listening... Speak comfortably 🎙️';
-        setTimeout(() => {
-          if (isRecording) {
-            memoInput.value = 'When Nora visited the library of regrets, it hit me: we do not need to live every alternate life to find peace with the one right in front of us.';
-            micBtn.classList.remove('recording');
-            isRecording = false;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        alert('Web Speech API is not supported on this browser. Please use Chrome, Edge, or Safari for voice dictation.');
+        return;
+      }
+
+      if (isRecording && activeRecognition) {
+        activeRecognition.stop();
+        return;
+      }
+
+      try {
+        activeRecognition = new SpeechRecognition();
+        activeRecognition.lang = navigator.language || 'ko-KR';
+        activeRecognition.interimResults = true;
+        activeRecognition.continuous = false;
+
+        let originalPlaceholder = memoInput.placeholder;
+
+        activeRecognition.onstart = () => {
+          isRecording = true;
+          micBtn.classList.add('recording');
+          memoInput.placeholder = '🎙️ Listening... Speak naturally now';
+          memoInput.value = '';
+        };
+
+        activeRecognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
           }
-        }, 1800);
-      } else {
+          memoInput.value = transcript;
+        };
+
+        activeRecognition.onerror = (err) => {
+          console.warn('Speech recognition error:', err.error);
+          isRecording = false;
+          micBtn.classList.remove('recording');
+          memoInput.placeholder = originalPlaceholder;
+          if (err.error === 'not-allowed') {
+            alert('Microphone permission was denied. Please allow microphone access in your browser.');
+          }
+        };
+
+        activeRecognition.onend = () => {
+          isRecording = false;
+          micBtn.classList.remove('recording');
+          memoInput.placeholder = originalPlaceholder;
+        };
+
+        activeRecognition.start();
+      } catch (err) {
+        console.warn('Speech recognition start failed:', err);
+        isRecording = false;
         micBtn.classList.remove('recording');
-        memoInput.placeholder = 'Jot a single casual thought...';
       }
     });
   }
@@ -1173,8 +1216,10 @@ function initReadingSanctuary() {
     });
   }
 
-  // Voice Reflection Mic (Gated)
+  // Voice Reflection Mic (Real Web Speech API)
+  let activeTimelineRecognition = null;
   let isTimelineRecording = false;
+
   if (timelineMicBtn && timelineInput) {
     timelineMicBtn.addEventListener('click', () => {
       if (!isUserAuthenticated()) {
@@ -1182,20 +1227,62 @@ function initReadingSanctuary() {
         return;
       }
 
-      isTimelineRecording = !isTimelineRecording;
-      if (isTimelineRecording) {
-        timelineMicBtn.classList.add('recording');
-        timelineInput.placeholder = 'Listening... Speak your thought 🎙️';
-        setTimeout(() => {
-          if (isTimelineRecording) {
-            timelineInput.value = 'Chapter 3: The distinction between definite optimism and indefinite pessimism is brilliant. We build the future by design, not luck.';
-            timelineMicBtn.classList.remove('recording');
-            isTimelineRecording = false;
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (!SpeechRecognition) {
+        alert('Web Speech API is not supported on this browser. Please use Chrome, Edge, or Safari for voice dictation.');
+        return;
+      }
+
+      if (isTimelineRecording && activeTimelineRecognition) {
+        activeTimelineRecognition.stop();
+        return;
+      }
+
+      try {
+        activeTimelineRecognition = new SpeechRecognition();
+        activeTimelineRecognition.lang = navigator.language || 'ko-KR';
+        activeTimelineRecognition.interimResults = true;
+        activeTimelineRecognition.continuous = false;
+
+        let originalPlaceholder = timelineInput.placeholder;
+
+        activeTimelineRecognition.onstart = () => {
+          isTimelineRecording = true;
+          timelineMicBtn.classList.add('recording');
+          timelineInput.placeholder = '🎙️ Listening to your voice... Speak your thoughts';
+          timelineInput.value = '';
+        };
+
+        activeTimelineRecognition.onresult = (event) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
           }
-        }, 2000);
-      } else {
+          timelineInput.value = transcript;
+        };
+
+        activeTimelineRecognition.onerror = (err) => {
+          console.warn('Timeline speech recognition error:', err.error);
+          isTimelineRecording = false;
+          timelineMicBtn.classList.remove('recording');
+          timelineInput.placeholder = originalPlaceholder;
+          if (err.error === 'not-allowed') {
+            alert('Microphone permission was denied. Please allow microphone access in your browser.');
+          }
+        };
+
+        activeTimelineRecognition.onend = () => {
+          isTimelineRecording = false;
+          timelineMicBtn.classList.remove('recording');
+          timelineInput.placeholder = originalPlaceholder;
+        };
+
+        activeTimelineRecognition.start();
+      } catch (err) {
+        console.warn('Timeline speech recognition start failed:', err);
+        isTimelineRecording = false;
         timelineMicBtn.classList.remove('recording');
-        timelineInput.placeholder = 'Jot a fleeting thought, favorite line, or tap mic...';
       }
     });
   }
