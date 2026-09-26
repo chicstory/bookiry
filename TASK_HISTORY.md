@@ -23,6 +23,10 @@
     - 동기화 완료 시 `Drive ↗` 원클릭 웹링크 제공.
   - **설정 모달 (⚙️ AI & Cloud Settings)**:
     - 무료 Google AI Studio Gemini API 키 및 Google OAuth Client ID를 브라우저 `localStorage`에 안전하게 1회 등록/관리하는 클린 라이트 모달 제공.
+  - **진짜 음성 받아쓰기 엔진 (Web Speech API)**:
+    - 2초 딜레이 목업 텍스트를 제거하고, 브라우저 공식 `SpeechRecognition` / `webkitSpeechRecognition` 연동.
+    - 독서 안식처 타임라인 마이크(`timelineMicBtn`) 및 랜딩 시뮬레이터 마이크 클릭 시 실시간 음성 스트리밍 텍스트 변환 (`interimResults: true`).
+    - 음성으로 말한 내용이 인풋창에 실시간으로 타이핑되고 엔터/전송 시 구글 드라이브 `00_Index.md`에 즉시 자동 누적.
   - **글로벌 프로덕션 배포**:
     - [chicstory.github.io/bookiry/](https://chicstory.github.io/bookiry/) 배포 및 메인 브랜치 푸시 완료.
 - **3. 결과 & 검증**:
