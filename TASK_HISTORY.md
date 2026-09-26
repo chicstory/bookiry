@@ -36,6 +36,10 @@
     - 헤더 네비게이션: 긴 이메일을 숨기고 초록 로그인 배지(`🟢 R`) + 톱니바퀴(`⚙️`)가 360px 모바일 화면에서도 100% 1줄에 고정되도록 압축.
     - 독서 안식처 상단 툴바: 우측으로 잘려나가던 4개 액션 버튼(`Print`, `Obsidian`, `Synced ✓`, `Drive ↗`)을 모바일 전용 2x2 타일 그리드로 자동 정렬하여 가로 스크롤/잘림 완벽 해결.
     - AI 키 안내 배너에 `Set Key ➔` 원터치 버튼을 탑재하여 모바일에서도 1초 만에 설정 모달 호출 가능.
+  - **Cloudflare Worker 에지 프록시 & 일반 유저 무설정(Keyless) 파이프라인 구축**:
+    - `bookiry/worker/` 서버리스 프로젝트 신설 (`src/index.js`, `wrangler.toml`).
+    - 대표 Gemini API 키를 Cloudflare 환경 Secret으로 은닉하여 일반 독자에게 API 키 입력 요구 없이 무료/자동으로 4대 소크라테스식 질문 제공.
+    - 프론트엔드(`app.js`)에 2단 하이브리드 파이프라인 탑재: 개인 키(BYOK) 우선 ➔ 미설정 시 Cloudflare Worker로 자동 폴백.
   - **글로벌 프로덕션 배포**:
     - [chicstory.github.io/bookiry/](https://chicstory.github.io/bookiry/) 배포 및 메인 브랜치 푸시 완료.
 - **3. 결과 & 검증**:
