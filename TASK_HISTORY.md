@@ -27,6 +27,10 @@
     - 2초 딜레이 목업 텍스트를 제거하고, 브라우저 공식 `SpeechRecognition` / `webkitSpeechRecognition` 연동.
     - 독서 안식처 타임라인 마이크(`timelineMicBtn`) 및 랜딩 시뮬레이터 마이크 클릭 시 실시간 음성 스트리밍 텍스트 변환 (`interimResults: true`).
     - 음성으로 말한 내용이 인풋창에 실시간으로 타이핑되고 엔터/전송 시 구글 드라이브 `00_Index.md`에 즉시 자동 누적.
+  - **구글 드라이브 양방향 크로스 디바이스 동기화 (Cloud Pull Sync)**:
+    - PC와 스마트폰 등 서로 다른 기기 접속 시 로컬스토리지가 분리되어 타임라인 메모가 보이지 않던 한계를 완벽 해소.
+    - 독서 안식처 진입 시 구글 드라이브의 해당 도서 `00_Index.md` 파일을 비동기 다운로드하여 `## ✍️ My Reflections` 메모를 파싱(`pullReflectionsFromDriveSilently`).
+    - 기기 로컬스토리지와 원격 드라이브 메모를 지능적으로 병합(Merge)하여, PC에서 쓴 메모가 스마트폰 타임라인 화면에 즉시 렌더링되도록 구현.
   - **글로벌 프로덕션 배포**:
     - [chicstory.github.io/bookiry/](https://chicstory.github.io/bookiry/) 배포 및 메인 브랜치 푸시 완료.
 - **3. 결과 & 검증**:
