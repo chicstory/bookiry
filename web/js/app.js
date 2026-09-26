@@ -1740,20 +1740,22 @@ async function fetchBookSynopsis(title, author = '') {
   }
 }
 
+// Cloudflare Worker Edge Proxy for Keyless Public Reader Access
+const CLOUDFLARE_WORKER_URL = 'https://bookiry-worker.chicstory.workers.dev';
+
 async function generateSparksWithGemini(bookTitle, bookAuthor, synopsis, compass, customIntent = '') {
-  const apiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
-  if (!apiKey) return null;
+  const localApiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
 
-  const compassGuidelines = {
-    'healing': 'Focus on quiet mental refuge, easing burnout/anxiety, surrendering self-judgment, and finding grounded stillness.',
-    'growth': 'Focus on unvarnished business reality, operational bottlenecks, counter-intuitive leverage, and concrete 1% behavioral change.',
-    'fiction': 'Focus on existential subtext, the protagonist moral crossroads, raw human loneliness, and poetic turning points of fate.',
-    'custom': `Focus with laser precision through the reader's personal quest: "${customIntent}". Connect the book's core theory directly to solving or evolving this quest.`
-  };
-
-  const compassHint = compassGuidelines[compass] || compassGuidelines['healing'];
-
-  const prompt = `You are a world-class Socratic reading coach and cognitive catalyst.
+  // 1. If user provided their own key, call Gemini directly (BYOK)
+  if (localApiKey) {
+    const compassGuidelines = {
+      'healing': 'Focus on quiet mental refuge, easing burnout/anxiety, surrendering self-judgment, and finding grounded stillness.',
+      'growth': 'Focus on unvarnished business reality, operational bottlenecks, counter-intuitive leverage, and concrete 1% behavioral change.',
+      'fiction': 'Focus on existential subtext, the protagonist moral crossroads, raw human loneliness, and poetic turning points of fate.',
+      'custom': `Focus with laser precision through the reader's personal quest: "${customIntent}". Connect the book's core theory directly to solving or evolving this quest.`
+    };
+    const compassHint = compassGuidelines[compass] || compassGuidelines['healing'];
+    const prompt = `You are a world-class Socratic reading coach and cognitive catalyst.
 Analyze the following book and generate 4 deep, challenging catalytic reading questions (The 4 Sparks) tailored to the reader's compass.
 
 Book Title: "${bookTitle}"
@@ -1776,63 +1778,69 @@ CRITICAL RULES:
   "echo": "After closing: A single concrete micro-action or mental shift to test tomorrow morning."
 }`;
 
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${localApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            response_mime_type: 'application/json',
+            temperature: 0.7
+          }
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const parsed = JSON.parse(rawText);
+          if (parsed.spark && parsed.lens && parsed.quest && parsed.echo) {
+            return parsed;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Local Gemini API call failed, falling back to Cloudflare Worker:', err);
+    }
+  }
+
+  // 2. Call Cloudflare Worker Edge Proxy (Keyless for readers)
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+    const res = await fetch(`${CLOUDFLARE_WORKER_URL}/api/sparks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          response_mime_type: 'application/json',
-          temperature: 0.7
-        }
+        title: bookTitle,
+        author: bookAuthor,
+        synopsis: synopsis,
+        compass: compass,
+        customIntent: customIntent
       })
     });
 
-    if (!res.ok) {
-      console.warn('Gemini API error status:', res.status);
-      return null;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.sparks) {
+        return data.sparks;
+      }
     }
-
-    const data = await res.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) return null;
-
-    const parsed = JSON.parse(rawText);
-    if (parsed.spark && parsed.lens && parsed.quest && parsed.echo) {
-      return parsed;
-    }
-    return null;
-  } catch (err) {
-    console.warn('Gemini sparks generation failed:', err);
-    return null;
+  } catch (workerErr) {
+    console.warn('Cloudflare Worker sparks proxy failed:', workerErr);
   }
+
+  return null;
 }
 
 async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
-  const apiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
+  const localApiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
   const banner = document.getElementById('aiSparksBanner');
   const bannerText = document.getElementById('aiSparksBannerText');
 
-  // If no Gemini key is set, show a gentle clickable invitation banner in sanctuary
-  if (!apiKey) {
-    if (banner && bannerText) {
-      bannerText.innerHTML = `<span>💡 Connect your free Gemini API key in <strong>⚙️ Settings</strong> to unlock deep, book-specific Socratic questions.</span> <button type="button" class="btn-banner-settings" id="btnBannerOpenSettings">Set Key ➔</button>`;
-      banner.style.display = 'flex';
-      banner.style.background = '#F8FAFC';
-      banner.style.borderColor = '#CBD5E1';
-      banner.style.color = '#475569';
-      banner.style.cursor = 'pointer';
-      banner.onclick = () => {
-        openSettingsModal();
-      };
-    }
-    return;
-  }
-
-  // Show active brewing banner
+  // Show active brewing banner immediately
   if (banner && bannerText) {
-    bannerText.textContent = `Consulting Gemini on "${bookData.title}" to craft deep, book-specific catalytic questions...`;
+    bannerText.innerHTML = `<span>✨ Brewing catalytic sparks for "${escapeHtml(bookData.title)}"...</span>`;
     banner.style.display = 'flex';
     banner.style.background = 'linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%)';
     banner.style.borderColor = '#BFDBFE';
@@ -1842,7 +1850,7 @@ async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
   // 1. Fetch synopsis from Google Books
   const synopsis = await fetchBookSynopsis(bookData.title, bookData.author);
 
-  // 2. Generate sparks via Gemini
+  // 2. Generate sparks via Gemini (Direct or Cloudflare Worker)
   const aiSparks = await generateSparksWithGemini(bookData.title, bookData.author, synopsis, compass, customIntent);
 
   if (aiSparks) {
@@ -1880,9 +1888,20 @@ async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
     // Auto-update Drive file with new deep sparks
     autoSyncToDriveSilently();
   } else {
-    if (banner) banner.style.display = 'none';
+    // Fallback: If both direct key and worker aren't active, show optional BYOK invitation
+    if (!localApiKey && banner && bannerText) {
+      bannerText.innerHTML = `<span>💡 Connect your free Gemini API key in <strong>⚙️ Settings</strong> to unlock deep, book-specific Socratic questions.</span> <button type="button" class="btn-banner-settings" id="btnBannerOpenSettings">Set Key ➔</button>`;
+      banner.style.display = 'flex';
+      banner.style.background = '#F8FAFC';
+      banner.style.borderColor = '#CBD5E1';
+      banner.style.color = '#475569';
+      banner.style.cursor = 'pointer';
+      banner.onclick = () => openSettingsModal();
+    } else if (banner) {
+      banner.style.display = 'none';
+    }
   }
-}
+
 
 // Generate contextual 4 sparks for any custom book (Incorporates Custom Intent)
 function generateDynamic4Sparks(title, compass, customIntent = '') {
