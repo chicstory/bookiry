@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Bookiry - Before opening a book, bring a gentle compass</title>
+  <meta name="description" content="Stop summarizing, start questioning. Read with gentle direction, not obligation. Capture lasting resonance that stays with you forever.">
+  <meta name="theme-color" content="#F8FAFC">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Bookiry - Intentional 1:1 Reading Compass">
+  <meta property="og:description" content="Summaries vanish in a week, but the right question lingers for a lifetime.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Analytics 4 (Rule 3) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-K3PFHN6VW7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-K3PFHN6VW7');
+  </script>
+
+  <!-- Google Identity Services (OAuth2 for Google Drive) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. Global Header (Rounded Rectangle Navigation & Lang Toggle)
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-logo" aria-label="Bookiry Home">
+        <div class="brand-icon-wrap">
+          <!-- Bunny with Compass Icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M7 10C7 7.23858 9.23858 5 12 5C14.7614 5 17 7.23858 17 10V14C17 16.7614 14.7614 19 12 19C9.23858 19 7 16.7614 7 14V10Z" fill="#3182F6" fill-opacity="0.15" stroke="#3182F6" stroke-width="1.8"/>
+            <path d="M9 5V2.5C9 1.67157 9.67157 1 10.5 1C11.3284 1 12 1.67157 12 2.5V5" stroke="#3182F6" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M15 5V2.5C15 1.67157 14.3284 1 13.5 1C12.6716 1 12 1.67157 12 2.5V5" stroke="#3182F6" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="3" stroke="#F59E0B" stroke-width="1.8"/>
+            <path d="M12 10.5L12.8 12L12 13.5L11.2 12Z" fill="#EF4444"/>
+          </svg>
+        </div>
+        <span>Bookiry</span>
+      </a>
+
+      <!-- Header Navigation: Explore, Library & Google Auth -->
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <button type="button" class="btn-nav" id="navExploreBtn" title="Explore and search books">
+          <span>🧭 Explore</span>
+        </button>
+        <button type="button" class="btn-nav" id="navLibraryBtn" title="Open My Personal Library">
+          <span>📚 Library</span>
+        </button>
+        
+        <!-- Google Sign-in Button (Guest State) -->
+        <button type="button" class="btn-nav btn-google-nav" id="btnGoogleAuthNav" title="Sign in with Google to sync notes">
+          <svg width="15" height="15" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span class="btn-google-text">Sign in</span>
+        </button>
+
+        <!-- User Profile Pill (Authenticated State, hidden by default) -->
+        <div class="user-profile-badge" id="userProfileBadge" style="display: none;" title="Connected with Google Drive">
+          <span class="user-avatar-circle" id="userAvatarText">R</span>
+          <span class="user-email-text" id="userEmailText">reader@gmail.com</span>
+          <button type="button" class="btn-logout-mini" id="btnLogoutMini" title="Sign out">×</button>
+        </div>
+
+        <!-- AI & Cloud Settings Button -->
+        <button type="button" class="btn-nav btn-settings-nav" id="btnSettingsNav" title="Configure Gemini AI & Google Drive">
+          <span>⚙️</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- =========================================================================
+         VIEW A: Landing & Exploration View (Default)
+         ========================================================================= -->
+    <div id="landingView">
+
+      <!-- =========================================================================
+           2. Hero Section: Compass Bunny Interactive Motion
+           ========================================================================= -->
+      <section class="hero-section">
+    <div class="container">
+      
+      <!-- Interactive Compass Bunny Stage (Zero Overflow) -->
+      <div class="bunny-stage-wrap">
+        <div class="bunny-thought-bubble" id="bunnyBubble">
+          Where shall we read today? 🐰
+        </div>
+        <div class="bunny-stage" id="bunnyStage" title="Tap the bunny!">
+          <div class="bunny-halo"></div>
+        
+        <!-- Animated Bunny Vector Holding Rotating Golden Compass -->
+        <div class="bunny-svg-wrap">
+          <svg width="110" height="110" viewBox="0 0 120 120" fill="none">
+            <!-- Shadow -->
+            <ellipse cx="60" cy="112" rx="36" ry="6" fill="#0F172A" fill-opacity="0.08"/>
+            
+            <!-- Ears -->
+            <path d="M42 42C40 22 47 6 54 8C61 10 54 26 50 44" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M45 38C44 26 48 15 52 16C56 17 53 28 49 40" fill="#FEE2E2"/>
+            
+            <path d="M78 42C80 22 73 6 66 8C59 10 66 26 70 44" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M75 38C76 26 72 15 68 16C64 17 67 28 71 40" fill="#FEE2E2"/>
+            
+            <!-- Body & Head -->
+            <ellipse cx="60" cy="74" rx="34" ry="32" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/>
+            <circle cx="60" cy="54" r="28" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/>
+            
+            <!-- Facial Features -->
+            <circle cx="48" cy="52" r="3" fill="#0F172A"/>
+            <circle cx="72" cy="52" r="3" fill="#0F172A"/>
+            <path d="M57 58C58.5 60 61.5 60 63 58" stroke="#0F172A" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="60" cy="56" r="2.2" fill="#F43F5E"/>
+            <circle cx="41" cy="57" r="4" fill="#FEE2E2"/>
+            <circle cx="79" cy="57" r="4" fill="#FEE2E2"/>
+            
+            <!-- Paws -->
+            <ellipse cx="44" cy="104" rx="10" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.2"/>
+            <ellipse cx="76" cy="104" rx="10" ry="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.2"/>
+            
+            <!-- Glowing Golden Compass -->
+            <g transform="translate(6, 0)">
+              <circle cx="60" cy="84" r="16" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.5"/>
+              <circle cx="60" cy="84" r="13" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/>
+              
+              <line x1="60" y1="73" x2="60" y2="76" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="60" y1="92" x2="60" y2="95" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="49" y1="84" x2="52" y2="84" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="68" y1="84" x2="71" y2="84" stroke="#D97706" stroke-width="1.8" stroke-linecap="round"/>
+              
+              <!-- Wobbling Compass Needle -->
+              <g class="compass-needle" style="transform-origin: 60px 84px;">
+                <polygon points="60,74 63,84 57,84" fill="#EF4444"/>
+                <polygon points="60,94 63,84 57,84" fill="#3B82F6"/>
+                <circle cx="60" cy="84" r="2.2" fill="#0F172A"/>
+              </g>
+              
+              <!-- Hands holding the compass -->
+              <ellipse cx="45" cy="84" rx="5" ry="4" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
+              <ellipse cx="75" cy="84" rx="5" ry="4" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
+            </g>
+          </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Typography -->
+      <div class="hero-tagline">
+        <span>🧭 INTENTIONAL 1:1 READING COMPASS</span>
+      </div>
+      <h1 class="hero-title">
+        Before opening a book,<br>bring a gentle compass.
+      </h1>
+      <p class="hero-desc">
+        Summaries vanish in a week, but the right question lingers for a lifetime.<br>
+        Stop overthinking reading. Set your compass direction and read with quiet intention.
+      </p>
+
+      <!-- Search Box Container -->
+      <div class="search-card-container">
+        <form class="search-box" onsubmit="event.preventDefault(); document.getElementById('demoSynthesizeBtn').scrollIntoView({behavior: 'smooth'});">
+          <svg class="search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="bookSearchInput" class="search-input" placeholder="Enter any book title or author... (e.g., The Midnight Library)" autocomplete="off">
+          <button type="submit" class="btn-search">
+            <span class="btn-search-text">Find Compass</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
+
+        <!-- Amazon-Style Live Book Search Autocomplete Dropdown -->
+        <div class="search-autocomplete-dropdown" id="searchAutocompleteDropdown" style="display: none;">
+          <!-- Dynamically populated with real book covers & authors via Open Library API -->
+        </div>
+
+        <!-- 4 Reading Compasses Selector -->
+        <div class="direction-chips-wrap">
+          <span class="direction-chip-label">Set your compass:</span>
+          <button type="button" class="btn-direction-chip active" data-direction="healing">
+            <span>🌿 Rest & Resonance</span>
+          </button>
+          <button type="button" class="btn-direction-chip" data-direction="growth">
+            <span>💼 Work & Growth</span>
+          </button>
+          <button type="button" class="btn-direction-chip" data-direction="fiction">
+            <span>🎭 Curiosity & Fiction</span>
+          </button>
+          <button type="button" class="btn-direction-chip" data-direction="custom">
+            <span>✨ Custom Intent</span>
+          </button>
+        </div>
+
+        <!-- Dynamic Custom Intent Input Bar (Revealed when Custom Intent is active) -->
+        <div class="custom-intent-input-wrap" id="customIntentWrap" style="display: none;">
+          <div class="custom-intent-inner">
+            <span class="custom-intent-icon">✨</span>
+            <input type="text" id="customIntentInput" class="custom-intent-input" placeholder="Define your personal reading quest... (e.g., Overcoming creative burnout)" maxlength="120" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Popular Recommendations -->
+        <div class="popular-books-wrap">
+          <span class="popular-label">Popular now:</span>
+          <span class="popular-item">#The Midnight Library</span>
+          <span class="popular-item">#Atomic Habits</span>
+          <span class="popular-item">#Klara and the Sun</span>
+          <span class="popular-item">#Principles</span>
+          <span class="popular-item">#The Little Prince</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- =========================================================================
+       3. Section: Reading Lenses (Carousel & Expandable Cards)
+       ========================================================================= -->
+  <section class="section-reading-direction" id="directionSection">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-badge">READING COMPASS</div>
+        <h2 class="section-title">4 Compass Directions That Shape How You Read</h2>
+        <p class="section-desc">
+          The same book unfolds entirely different depths depending on the compass you carry. Tap any card to reveal its guiding prompts.
+        </p>
+      </div>
+
+      <!-- Expandable Carousel Cards -->
+      <div class="direction-cards-carousel">
+        
+        <!-- Card 1: Rest & Resonance -->
+        <div class="direction-card badge-healing-card expanded" tabindex="0">
+          <div class="card-icon-badge badge-healing">🌿</div>
+          <div class="direction-card-title">Rest & Resonance</div>
+          <div class="direction-card-subtitle">"Ease your mind & find comfort in quiet lines"</div>
+          <div class="direction-card-core">
+            No tests. No memorization. Give yourself a gentle pause and seek just one sentence that warms your heart.
+          </div>
+          
+          <div class="direction-card-expandable">
+            <div class="expandable-label">Sample Questions to Carry</div>
+            <div class="sample-question-item">
+              <span>Q1.</span> What quiet line made you stop turning the page and look out the window?
+            </div>
+            <div class="sample-question-item">
+              <span>Q2.</span> Which character felt so much like you that you wished you could hug them?
+            </div>
+          </div>
+          <div class="card-expand-hint">Collapse ▲</div>
+        </div>
+
+        <!-- Card 2: Work & Growth -->
+        <div class="direction-card badge-growth-card" tabindex="0">
+          <div class="card-icon-badge badge-growth">💼</div>
+          <div class="direction-card-title">Work & Growth</div>
+          <div class="direction-card-subtitle">"One actionable spark you can test tomorrow"</div>
+          <div class="direction-card-core">
+            Don't get overwhelmed by hundreds of tips. Extract just one frictionless habit you can try first thing tomorrow morning.
+          </div>
+
+          <div class="direction-card-expandable">
+            <div class="expandable-label">Sample Questions to Carry</div>
+            <div class="sample-question-item">
+              <span>Q1.</span> How would you translate the author's key framework into your daily work language?
+            </div>
+            <div class="sample-question-item">
+              <span>Q2.</span> What is one 10-minute micro-action you can test in tomorrow's morning routine?
+            </div>
+          </div>
+          <div class="card-expand-hint">View Prompts ▼</div>
+        </div>
+
+        <!-- Card 3: Curiosity & Fiction -->
+        <div class="direction-card badge-fiction-card" tabindex="0">
+          <div class="card-icon-badge badge-fiction">🎭</div>
+          <div class="direction-card-title">Curiosity & Fiction</div>
+          <div class="direction-card-subtitle">"Escape into alternate worlds & what-ifs"</div>
+          <div class="direction-card-core">
+            Dive into suspense, atmosphere, and deep worldbuilding. Immerse yourself completely and explore beyond the final chapter.
+          </div>
+
+          <div class="direction-card-expandable">
+            <div class="expandable-label">Sample Questions to Carry</div>
+            <div class="sample-question-item">
+              <span>Q1.</span> If you were a bystander or antagonist, how would you view the protagonist's dilemma?
+            </div>
+            <div class="sample-question-item">
+              <span>Q2.</span> What subtle detail or foreshadowing made you gasp in sheer awe?
+            </div>
+          </div>
+          <div class="card-expand-hint">View Prompts ▼</div>
+        </div>
+
+        <!-- Card 4: Custom Intent -->
+        <div class="direction-card badge-custom-card" tabindex="0">
+          <div class="card-icon-badge badge-custom">✨</div>
+          <div class="direction-card-title">Custom Intent</div>
+          <div class="direction-card-subtitle">"Your own personal quest & thesis"</div>
+          <div class="direction-card-core">
+            Reading for investment, life transition, or research? Define your unique quest and get personalized prompts tailored to your goals.
+          </div>
+
+          <div class="direction-card-expandable">
+            <div class="expandable-label">Sample Questions to Carry</div>
+            <div class="sample-question-item">
+              <span>Q1.</span> What exact real-world problem do you need this author to solve for you?
+            </div>
+            <div class="sample-question-item">
+              <span>Q2.</span> Which counter-argument in this book challenges your current belief system?
+            </div>
+          </div>
+          <div class="card-expand-hint">View Prompts ▼</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       4. Section: Interactive Synthesis Simulator
+       ========================================================================= -->
+  <section class="section-synthesis-flow">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-badge">INTERACTIVE DEMO</div>
+        <h2 class="section-title">A Whispered Thought Becomes a Lasting Card</h2>
+        <p class="section-desc">
+          Try it below! Whisper or type a single raw thought, and preview how Bookiry polishes it into a keepsake resonance card.
+        </p>
+      </div>
+
+      <div class="synthesis-card-wrapper">
+        
+        <!-- Step Indicator -->
+        <div class="step-indicator-bar">
+          <div class="step-node active">
+            <div class="step-circle">1</div>
+            <span class="step-title">Pick Compass</span>
+          </div>
+          <div class="step-node active">
+            <div class="step-circle">2</div>
+            <span class="step-title">Whisper Thought</span>
+          </div>
+          <div class="step-node">
+            <div class="step-circle">3</div>
+            <span class="step-title">Resonance Card</span>
+          </div>
+        </div>
+
+        <!-- Interactive Demo Box -->
+        <div class="demo-inquiry-box">
+          <div class="demo-inquiry-header">
+            <div class="demo-badges-group">
+              <span class="demo-book-badge">📖 The Midnight Library</span>
+              <span class="demo-compass-badge">🌿 Rest & Resonance</span>
+            </div>
+            <span class="demo-preview-pill">Interactive Demo</span>
+          </div>
+          <div class="demo-question-text">
+            “Closing the book right now, what quiet realization lingers most warmly in your heart?”
+          </div>
+
+          <!-- Memo Input & Mic -->
+          <div class="memo-input-container">
+            <textarea id="demoMemoInput" class="memo-textarea" rows="2" placeholder="Jot a single casual thought... (or tap the mic on the right to speak)"></textarea>
+            <button type="button" class="btn-mic" id="demoMicBtn" title="Speak for 10 seconds">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div class="action-row">
+            <span style="font-size: 0.82rem; color: var(--text-muted);">
+              💡 Raw fragments are welcome. No formatting needed.
+            </span>
+            <button type="button" class="btn-synthesize" id="demoSynthesizeBtn">
+              <span>✨ Create Resonance Card</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Generated Result Card -->
+        <div class="synthesis-result-card" id="demoResultCard">
+          <div class="result-header">
+            <div>
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-emerald);">BOOKIRY RESONANCE CARD</span>
+              <div class="result-title">Warmth Retained from The Midnight Library</div>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-light);">Sept 2026</div>
+          </div>
+          <div class="result-quote">
+            “When Nora visited the library of regrets, it hit me: we don't need to live every alternate life to find peace with the one right in front of us.”
+          </div>
+          <div class="result-tags">
+            <span class="result-tag">🌿 Rest & Resonance</span>
+            <span class="result-tag">☕ Gentle Peace</span>
+            <span class="result-tag">🎁 Freedom from Regret</span>
+          </div>
+        </div>
+
+        <!-- Yearly Recap Pathway -->
+        <div class="recap-preview-banner">
+          <div class="recap-text">
+            <h4>🌌 These small pebbles gather into your personal 'Year in Reading'</h4>
+            <p>Every December, Bookiry scans your retained reflections and crafts a stunning Spotify-style reading recap (Bookiry Wrapped).</p>
+          </div>
+          <button type="button" class="btn-recap-sample" onclick="alert('In December, your top questions and key personal reflections transform into shareable story cards 🐰');">
+            Preview Recap ↗
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       5. Section: Library Archive Cards (Image - Title - Author - Publisher & Reflection)
+       ========================================================================= -->
+  <section class="section-books-archive" id="archiveSection">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-badge">READING ARCHIVE</div>
+        <h2 class="section-title">The Sanctuary of Retained Resonance</h2>
+        <p class="section-desc">
+          Book cover, author, publisher, and your authentic reflections beautifully presented on a single responsive card with zero overflow.
+        </p>
+      </div>
+
+      <!-- Archive Grid (Rule 9: Mobile 360px Zero Overflow) -->
+      <div class="archive-grid">
+        
+        <!-- Book Card 1: The Midnight Library -->
+        <article class="book-archive-card">
+          <div class="book-meta-header">
+            <div class="book-cover-frame">
+              <div class="book-cover-fallback cover-bg-2">
+                <span>The<br>Midnight<br>Library</span>
+                <span style="font-size: 0.58rem; opacity: 0.8; margin-top: 4px;">Matt Haig</span>
+              </div>
+            </div>
+            <div class="book-text-info">
+              <span class="book-lens-badge lens-healing">🌿 Rest & Resonance</span>
+              <h3 class="book-title-text">The Midnight Library</h3>
+              <div class="book-author-publisher">
+                <span>Matt Haig</span>
+                <span class="meta-divider">·</span>
+                <span>Viking</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reader's Reflection Block -->
+          <div class="reader-thought-quote quote-healing">
+            <div class="quote-label">
+              <span>Reader's Resonance</span>
+              <span>Completed</span>
+            </div>
+            “Felt like a warm meal after a long, rainy day. You don't have to conquer the entire world to feel alive; loving the present moment and the people beside you is more than enough.”
+          </div>
+
+          <div class="card-footer-meta">
+            <span>Sept 2026</span>
+            <button type="button" class="btn-card-action" onclick="alert('Full report and blog draft copied to clipboard! 📋');">
+              <span>Copy Note</span> ↗
+            </button>
+          </div>
+        </article>
+
+        <!-- Book Card 2: Atomic Habits -->
+        <article class="book-archive-card">
+          <div class="book-meta-header">
+            <div class="book-cover-frame">
+              <div class="book-cover-fallback cover-bg-1">
+                <span>Atomic<br>Habits</span>
+                <span style="font-size: 0.58rem; opacity: 0.8; margin-top: 4px;">James Clear</span>
+              </div>
+            </div>
+            <div class="book-text-info">
+              <span class="book-lens-badge lens-growth">💼 Work & Growth</span>
+              <h3 class="book-title-text">Atomic Habits</h3>
+              <div class="book-author-publisher">
+                <span>James Clear</span>
+                <span class="meta-divider">·</span>
+                <span>Avery</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reader's Reflection Block -->
+          <div class="reader-thought-quote quote-growth">
+            <div class="quote-label">
+              <span>Action Commitment</span>
+              <span>Completed</span>
+            </div>
+            “Instead of attempting an overwhelming workout overhaul, I'm simply putting my running shoes by the front door before going to sleep. Small sparks, big fires.”
+          </div>
+
+          <div class="card-footer-meta">
+            <span>Sept 2026</span>
+            <button type="button" class="btn-card-action" onclick="alert('Full report and blog draft copied to clipboard! 📋');">
+              <span>Copy Note</span> ↗
+            </button>
+          </div>
+        </article>
+
+        <!-- Book Card 3: Klara and the Sun -->
+        <article class="book-archive-card">
+          <div class="book-meta-header">
+            <div class="book-cover-frame">
+              <div class="book-cover-fallback cover-bg-3">
+                <span>Klara<br>& the Sun</span>
+                <span style="font-size: 0.58rem; opacity: 0.8; margin-top: 4px;">Kazuo Ishiguro</span>
+              </div>
+            </div>
+            <div class="book-text-info">
+              <span class="book-lens-badge lens-fiction">🎭 Curiosity & Fiction</span>
+              <h3 class="book-title-text">Klara and the Sun</h3>
+              <div class="book-author-publisher">
+                <span>Kazuo Ishiguro</span>
+                <span class="meta-divider">·</span>
+                <span>Faber & Faber</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reader's Reflection Block -->
+          <div class="reader-thought-quote quote-fiction">
+            <div class="quote-label">
+              <span>Lingering Scene</span>
+              <span>Completed</span>
+            </div>
+            “Klara observing the fading sunlight through the junkyard window broke my heart in the gentlest way possible. What makes us truly human isn't our minds, but our devotion to love.”
+          </div>
+
+          <div class="card-footer-meta">
+            <span>Sept 2026</span>
+            <button type="button" class="btn-card-action" onclick="alert('Full report and blog draft copied to clipboard! 📋');">
+              <span>Copy Note</span> ↗
+            </button>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+    </div> <!-- /#landingView -->
+
+    <!-- =========================================================================
+         VIEW B: My Personal Library & 365-Day Live Recap Dashboard
+         ========================================================================= -->
+    <div id="libraryView" class="library-view" style="display: none;">
+      <div class="library-container">
+        
+        <!-- Library Top Header -->
+        <div class="library-top-head">
+          <div class="library-title-group">
+            <h1>📚 My Reading Library</h1>
+            <p>Your personal sanctuary of retained reflections & real-time reading recap.</p>
+          </div>
+          <button type="button" class="btn-explore-books" id="btnLibraryExplore" title="Search or explore new books">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>Explore New Books</span>
+          </button>
+        </div>
+
+        <!-- 365-Day Live Reading Recap Banner -->
+        <div class="live-recap-banner">
+          <div class="recap-banner-header">
+            <div class="recap-badge-live">
+              <span class="pulse-dot"></span> Live Reading Recap
+            </div>
+            <span class="recap-badge-tag">365-Day Real-Time Sync</span>
+          </div>
+
+          <div class="recap-metrics-grid">
+            <div class="recap-metric-card">
+              <div class="metric-number" id="recapTotalThoughts">0</div>
+              <div class="metric-label">Thoughts Retained</div>
+              <div class="metric-sub">Across all journeys</div>
+            </div>
+            <div class="recap-metric-card">
+              <div class="metric-number" id="recapActiveBooks">0</div>
+              <div class="metric-label">In Progress</div>
+              <div class="metric-sub">Active reading books</div>
+            </div>
+            <div class="recap-metric-card">
+              <div class="metric-number" id="recapCompletedBooks">0</div>
+              <div class="metric-label">Completed</div>
+              <div class="metric-sub">Resonance minted</div>
+            </div>
+            <div class="recap-metric-card">
+              <div class="metric-number" id="recapDominantLens">🌿 Rest</div>
+              <div class="metric-label">Primary Compass</div>
+              <div class="metric-sub">Dominant perspective</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Currently Reading Shelf -->
+        <section class="library-shelf-section">
+          <h2 class="shelf-title">📖 Currently Reading</h2>
+          <div class="shelf-grid" id="currentlyReadingGrid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </section>
+
+        <!-- Completed & Resonance Archive Shelf -->
+        <section class="library-shelf-section">
+          <h2 class="shelf-title">🏆 Completed & Resonance Archive</h2>
+          <div class="shelf-grid" id="completedReadingGrid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </section>
+
+        <!-- Library Guest Lock Overlay (Shown when unauthenticated) -->
+        <div class="library-gate-overlay" id="libraryGateOverlay" style="display: none;">
+          <div class="library-gate-card">
+            <div class="gate-lock-icon">🔒</div>
+            <h2 class="gate-card-title">Unlock Your Personal Reading Cloud</h2>
+            <p class="gate-card-desc">
+              Connect your Google Account to activate your 365-day live recap, store lifetime reflections, and auto-sync with Google Drive. Zero server storage.
+            </p>
+            <button type="button" class="btn-gate-google-large" id="btnLibraryGateLogin">
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Connect with Google Drive</span>
+            </button>
+            <div class="gate-security-note">🛡️ Private & Secure: Your data is stored directly in your private Google Drive.</div>
+          </div>
+        </div>
+
+      </div>
+    </div> <!-- /#libraryView -->
+
+    <!-- =========================================================================
+         VIEW C: Dedicated Reading Sanctuary View (Focused Reading Room)
+         ========================================================================= -->
+    <div id="readingView" class="reading-sanctuary-view" style="display: none;">
+      <div class="sanctuary-container">
+        
+        <!-- Sanctuary Navigation & Top Utility Bar -->
+        <div class="sanctuary-top-bar">
+          <!-- Minimal Back Link (No bulky button box) -->
+          <button type="button" class="btn-back-link" id="btnBackHome" title="Return to My Library">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>My Library</span>
+          </button>
+          
+          <div class="sanctuary-status-badge">
+            <span class="pulse-dot"></span> Active Reading Session
+          </div>
+
+          <div class="active-actions-bar">
+            <button type="button" class="btn-action-pill" id="btnPrintBookGuide" title="Print 1-page reading bookmark guide">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              <span>Print Guide</span>
+            </button>
+            <button type="button" class="btn-action-pill" id="btnCopyMarkdown" title="Copy 00_Index.md for Obsidian">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Obsidian .md</span>
+            </button>
+            <!-- Google Drive Cloud Sync Pill -->
+            <button type="button" class="btn-action-pill btn-drive-sync-pill" id="btnSyncDrive" title="Sync reading index to Google Drive">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+              </svg>
+              <span id="btnSyncDriveText">Sync Drive</span>
+            </button>
+            <a href="#" target="_blank" rel="noopener noreferrer" class="btn-action-pill btn-drive-link-pill" id="linkOpenDriveFile" style="display: none;" title="Open in Google Drive">
+              <span>Drive ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- AI Sparks Realtime Generation Banner -->
+        <div class="ai-sparks-banner" id="aiSparksBanner" style="display: none;">
+          <span class="ai-spark-spin">✨</span>
+          <span id="aiSparksBannerText">Consulting Gemini to uncover deep book-specific catalytic questions...</span>
+        </div>
+
+        <!-- Sanctuary Active Book Card -->
+        <div class="active-book-card">
+          
+          <!-- Book Header -->
+          <div class="active-book-header">
+            <div class="active-cover-wrap" id="activeCoverWrap">
+              <!-- Dynamic styled cover -->
+            </div>
+            <div class="active-meta-wrap">
+              <div class="active-status-bar">
+                <span class="active-reading-badge">
+                  <span class="pulse-dot"></span> Reading in progress
+                </span>
+                <span class="active-compass-tag" id="activeCompassTag">🌿 Rest & Resonance</span>
+              </div>
+              <h1 class="active-book-title" id="activeBookTitle">Zero to One</h1>
+              <div class="active-book-author" id="activeBookAuthor">Peter Thiel · Crown Business</div>
+            </div>
+          </div>
+
+          <!-- 4 Catalytic Sparks Grid (Spark 1 Free / Sparks 2-4 Gated when unauthenticated) -->
+          <div class="prompts-grid-4">
+            <!-- 1. The Spark (Always Free & Open) -->
+            <div class="prompt-box prompt-box-spark">
+              <div class="prompt-box-header">
+                <span class="prompt-badge">💡 The Spark</span>
+                <span class="prompt-subtext">Before opening · Free Preview</span>
+              </div>
+              <p class="prompt-content" id="activePromptSpark">
+                "What is one counter-intuitive belief you hold that almost nobody agrees with you on?"
+              </p>
+            </div>
+
+            <!-- 2. The Deep Lens -->
+            <div class="prompt-box prompt-box-lens" id="promptBoxLens">
+              <div class="prompt-box-header">
+                <span class="prompt-badge">🔍 The Deep Lens</span>
+                <span class="prompt-subtext">Midway observation</span>
+              </div>
+              <p class="prompt-content" id="activePromptLens">
+                "Which subtle sentence or pattern made you stop turning pages and notice something new?"
+              </p>
+            </div>
+
+            <!-- 3. The Counter-Quest -->
+            <div class="prompt-box prompt-box-quest" id="promptBoxQuest">
+              <div class="prompt-box-header">
+                <span class="prompt-badge">⚔️ The Counter-Quest</span>
+                <span class="prompt-subtext">Challenging the argument</span>
+              </div>
+              <p class="prompt-content" id="activePromptQuest">
+                "The author claims 'competition is for losers'. When you close this book, can you still believe that rivalry drives true progress?"
+              </p>
+            </div>
+
+            <!-- 4. The Lingering Echo -->
+            <div class="prompt-box prompt-box-echo" id="promptBoxEcho">
+              <div class="prompt-box-header">
+                <span class="prompt-badge">🎁 The Lingering Echo</span>
+                <span class="prompt-subtext">Lasting takeaway</span>
+              </div>
+              <p class="prompt-content" id="activePromptEcho">
+                "What single, frictionless action or mindset shift are you ready to carry into your everyday reality?"
+              </p>
+            </div>
+          </div>
+
+          <!-- Sparks Gate Banner (Shown when unauthenticated) -->
+          <div class="sparks-gate-banner" id="sparksGateBanner" style="display: none;">
+            <div class="gate-banner-left">
+              <div class="gate-banner-title">🔒 3 Deep Sparks & Thought Timeline are Locked</div>
+              <div class="gate-banner-desc">Sign in with Google to reveal all 4 sparks, capture timeline notes, and auto-sync with your Google Drive.</div>
+            </div>
+            <button type="button" class="btn-gate-google" id="btnSparksUnlock">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Unlock with Google Drive</span>
+            </button>
+          </div>
+
+          <!-- Reminder Notice -->
+          <div class="spark-reminder-notice">
+            <span>🕊️</span>
+            <span>These 4 sparks are not a test. Carry them quietly in your mind as you turn pages. No answers required.</span>
+          </div>
+
+          <!-- The Live Reflection Timeline (Append-Only Event Log) -->
+          <div class="reflections-timeline-section">
+            <div class="timeline-header">
+              <h3 class="timeline-title">✍️ My Reflections</h3>
+              <span class="timeline-count" id="timelineCount">0 thoughts</span>
+            </div>
+
+            <!-- Timeline Items List -->
+            <div class="timeline-list" id="timelineList">
+              <div class="timeline-empty" id="timelineEmpty">
+                No thoughts yet. Capture fleeting quotes or realizations as you read.
+              </div>
+            </div>
+
+            <!-- Input Bar (Spacious & Comfortable) -->
+            <form class="timeline-input-bar" id="timelineForm">
+              <textarea class="timeline-textarea" id="timelineInput" rows="3" placeholder="Jot a fleeting thought, favorite line, or tap mic... (e.g. p.42: The trap of competition)"></textarea>
+              <div class="timeline-input-actions">
+                <button type="button" class="btn-timeline-mic" id="timelineMicBtn" title="Speak to jot note">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                  </svg>
+                </button>
+                <button type="submit" class="btn-timeline-add">
+                  <span>Add Thought</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Milestone: Separated Finish Book Section to Prevent Accidental Clicks -->
+            <div class="finish-milestone-zone">
+              <div class="milestone-divider">
+                <span>Reading complete?</span>
+              </div>
+              <button type="button" class="btn-finish-book" id="btnFinishBook">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>Finish Book & Mint Resonance Card</span>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div> <!-- /#readingView -->
+
+    <!-- =========================================================================
+         VIEW D: Pricing & Membership View (#pricingView)
+         ========================================================================= -->
+    <div id="pricingView" class="pricing-view" style="display: none;">
+      <div class="pricing-container">
+        
+        <!-- Pricing Top Bar -->
+        <div class="pricing-top-bar">
+          <button type="button" class="btn-back-link" id="btnPricingBack" title="Return to Explore">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div class="pricing-badge-tag">💎 Transparent Pricing</div>
+        </div>
+
+        <!-- Pricing Header -->
+        <div class="pricing-header-center">
+          <h1 class="pricing-main-title">Invest in thoughts that outlive summaries</h1>
+          <p class="pricing-main-subtitle">
+            Every memorable book changes how you see reality. Choose the reading rhythm that fits your life. Zero server lock-in. 100% private to your cloud.
+          </p>
+
+          <!-- Monthly / Annual Pricing Toggle Switch -->
+          <div class="pricing-toggle-wrap">
+            <div class="pricing-toggle" role="group" aria-label="Billing frequency selection">
+              <button type="button" class="btn-toggle-option active" id="btnToggleMonthly" aria-pressed="true">
+                Monthly ($3.90/mo)
+              </button>
+              <button type="button" class="btn-toggle-option" id="btnToggleAnnual" aria-pressed="false">
+                Annual ($39/yr)
+                <span class="toggle-save-badge">Save 17%</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Tier Plan Comparison Cards -->
+        <div class="pricing-cards-grid">
+          
+          <!-- Card 1: Explorer (Guest) -->
+          <div class="pricing-card">
+            <div class="plan-badge">Explorer</div>
+            <div class="plan-price-wrap">
+              <span class="plan-price">$0</span>
+              <span class="plan-period">/ Free forever</span>
+            </div>
+            <p class="plan-description">For curious readers wandering through ideas and testing initial questions.</p>
+            
+            <ul class="plan-features-list">
+              <li><span class="check-icon">✓</span> <span><strong>💡 The Spark (Question 1)</strong> on every book</span></li>
+              <li><span class="check-icon">✓</span> <span>Instant book search & title matching</span></li>
+              <li><span class="check-icon">✓</span> <span>4 curated reading compasses</span></li>
+              <li class="disabled"><span class="cross-icon">✕</span> <span>3 Deep Sparks (Lens, Quest, Echo)</span></li>
+              <li class="disabled"><span class="cross-icon">✕</span> <span>Personal Library & Live Recap</span></li>
+              <li class="disabled"><span class="cross-icon">✕</span> <span>Google Drive & Obsidian Sync</span></li>
+            </ul>
+
+            <button type="button" class="btn-plan-action btn-plan-outline" id="btnPlanExplorer">
+              <span>Start Exploring Free</span>
+            </button>
+          </div>
+
+          <!-- Card 2: Reader (Free Account) -->
+          <div class="pricing-card">
+            <div class="plan-badge plan-badge-blue">Reader</div>
+            <div class="plan-price-wrap">
+              <span class="plan-price">$0</span>
+              <span class="plan-period">/ Google Account</span>
+            </div>
+            <p class="plan-description">For intentional readers testing deep questions and keeping local notes.</p>
+            
+            <ul class="plan-features-list">
+              <li><span class="check-icon">✓</span> <span><strong>Up to 3 Active Books</strong> in Library</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>All 4 Catalytic Sparks</strong> on your 3 books</span></li>
+              <li><span class="check-icon">✓</span> <span>Reflection Timeline & Voice notes (browser)</span></li>
+              <li><span class="check-icon">✓</span> <span>Basic 365-day reading stats</span></li>
+              <li class="disabled"><span class="cross-icon">✕</span> <span>Google Drive Cloud Sync</span></li>
+              <li class="disabled"><span class="cross-icon">✕</span> <span>Obsidian 00_Index.md Sync</span></li>
+            </ul>
+
+            <button type="button" class="btn-plan-action btn-plan-secondary" id="btnPlanReader">
+              <span>Sign in with Google</span>
+            </button>
+          </div>
+
+          <!-- Card 3: Bookiry Pro (Monthly / Annual Membership) -->
+          <div class="pricing-card pricing-card-featured">
+            <div class="featured-ribbon">⭐ Most Loved by Deep Thinkers</div>
+            <div class="plan-badge plan-badge-gold">Bookiry Pro</div>
+            <div class="plan-price-wrap" id="proPriceWrap">
+              <span class="plan-price" id="proPriceAmount">$3.90</span>
+              <span class="plan-period" id="proPricePeriod">/ month</span>
+            </div>
+            <p class="plan-description" id="proPlanSubtext">Flexible monthly access. Cancel anytime with 1-click in your account.</p>
+            
+            <ul class="plan-features-list">
+              <li><span class="check-icon">✓</span> <span><strong id="proFeatureLimit">Up to 30 Books / Month</strong> (Generous Fair-Use)</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>All 4 Catalytic Sparks</strong> on every book</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>📁 Google Drive 2-Way Sync</strong> (drive.file)</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>📋 Obsidian 00_Index.md</strong> 1-Click Vault Sync</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>🤖 Gemini AI Deep Reading Milestone Report</strong></span></li>
+              <li><span class="check-icon">✓</span> <span><strong>🏆 365-Day High-Resolution Live Recap</strong> cards</span></li>
+              <li><span class="check-icon">✓</span> <span><strong>🛡️ Zero server database.</strong> 100% Data Ownership</span></li>
+            </ul>
+
+            <button type="button" class="btn-plan-action btn-plan-primary" id="btnPlanPro">
+              <span id="btnPlanProText">Subscribe Monthly ($3.90/mo)</span>
+            </button>
+            <div class="guarantee-text">🔒 14-day unconditional money-back guarantee</div>
+          </div>
+
+        </div>
+
+        <!-- License Key Activation Box -->
+        <div class="license-activation-card">
+          <div class="license-card-left">
+            <div class="license-icon">🔑</div>
+            <div>
+              <div class="license-title">Already subscribed to Pro?</div>
+              <div class="license-sub">Enter your license key or order code from Lemon Squeezy / Stripe to activate your Pro membership.</div>
+            </div>
+          </div>
+          <form class="license-form" id="licenseForm">
+            <input type="text" class="license-input" id="licenseInput" placeholder="BOOKIRY-PRO-XXXX-XXXX" required spellcheck="false" autocomplete="off">
+            <button type="submit" class="btn-license-activate" id="btnActivateLicense">
+              <span>Activate Pro</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="pricing-faq-section">
+          <h2 class="faq-section-title">Frequently Asked Questions</h2>
+          <div class="faq-grid">
+            <div class="faq-item">
+              <h3 class="faq-q">Why do you store files in my Google Drive instead of your database?</h3>
+              <p class="faq-a">Your thoughts are deeply personal. We believe reading notes should never be locked behind a startup's private database. By storing notes in your own Google Drive (<code>Bookiry/</code> folder), you retain 100% ownership forever—even if Bookiry disappeared tomorrow.</p>
+            </div>
+            <div class="faq-item">
+              <h3 class="faq-q">How does the Obsidian sync work?</h3>
+              <p class="faq-a">When you open any book, Bookiry pre-generates a clean <code>00_Index.md</code> with standard YAML frontmatter, your 4 catalytic sparks, and your appended reflection timestamps. You can copy it or direct-sync to your Obsidian vault seamlessly.</p>
+            </div>
+            <div class="faq-item">
+              <h3 class="faq-q">What is the difference between Monthly ($3.90) and Annual ($39)?</h3>
+              <p class="faq-a">Both plans unlock all 4 catalytic sparks, Google Drive 2-way sync, and Obsidian export. The <strong>Monthly Plan ($3.90/mo)</strong> offers ultimate flexibility with up to 30 books analyzed each month. The <strong>Annual Plan ($39/yr)</strong> gives you 2 months free (saving 17%) and expands your quota to 50 books per month.</p>
+            </div>
+            <div class="faq-item">
+              <h3 class="faq-q">Can I request a refund if it is not for me?</h3>
+              <p class="faq-a">Absolutely. If Bookiry doesn't bring peace and deep resonance to your reading within 14 days, just drop us an email for a full, courteous 100% refund.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div> <!-- /#pricingView -->
+  </main>
+
+  <!-- =========================================================================
+       Global Footer (Identical Menu + Pricing, High-Legibility Mobile Spacing)
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      
+      <div class="footer-brand-wrap">
+        <a href="index.html" class="footer-brand" aria-label="Bookiry Home">
+          <div class="brand-icon-wrap mini">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M7 10C7 7.23858 9.23858 5 12 5C14.7614 5 17 7.23858 17 10V14C17 16.7614 14.7614 19 12 19C9.23858 19 7 16.7614 7 14V10Z" fill="#3182F6" fill-opacity="0.15" stroke="#3182F6" stroke-width="1.8"/>
+              <path d="M9 5V2.5C9 1.67157 9.67157 1 10.5 1C11.3284 1 12 1.67157 12 2.5V5" stroke="#3182F6" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M15 5V2.5C15 1.67157 14.3284 1 13.5 1C12.6716 1 12 1.67157 12 2.5V5" stroke="#3182F6" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="12" cy="12" r="3" stroke="#F59E0B" stroke-width="1.8"/>
+              <path d="M12 10.5L12.8 12L12 13.5L11.2 12Z" fill="#EF4444"/>
+            </svg>
+          </div>
+          <span>Bookiry</span>
+        </a>
+        <p class="footer-tagline">Intentional 1:1 Reading Sanctuary. Zero vendor lock-in. 100% private to your Google Drive.</p>
+      </div>
+
+      <!-- Footer Navigation (Generous Touch Spacing for Mobile Readability) -->
+      <nav class="footer-nav" aria-label="Footer Navigation">
+        <button type="button" class="footer-nav-link" id="footerNavExplore">
+          <span>🧭 Explore</span>
+        </button>
+        <button type="button" class="footer-nav-link" id="footerNavLibrary">
+          <span>📚 Library</span>
+        </button>
+        <button type="button" class="footer-nav-link footer-nav-highlight" id="footerNavPricing">
+          <span>💎 Pricing</span>
+        </button>
+        <button type="button" class="footer-nav-link" id="footerNavPrivacy">
+          <span>🛡️ Privacy</span>
+        </button>
+      </nav>
+
+      <div class="footer-bottom-copy">
+        <span>© 2026 Bookiry. Crafted for thinkers who carry questions beyond the final chapter.</span>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Google Drive OAuth Authorization Modal -->
+  <div class="auth-modal-overlay" id="googleAuthModal" style="display: none;">
+    <div class="auth-modal-card">
+      <div class="auth-modal-header">
+        <div class="google-logo-wrap">
+          <svg width="24" height="24" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">Google Account</span>
+        </div>
+        <button type="button" class="btn-auth-modal-close" id="btnAuthModalClose" title="Close">×</button>
+      </div>
+
+      <h3 class="auth-modal-title">Connect with Google Drive</h3>
+      <p class="auth-modal-desc">
+        Authorize Bookiry to store your reading notes and live recap in your own private cloud storage.
+      </p>
+
+      <div class="permission-scope-box">
+        <div class="scope-icon">📁</div>
+        <div class="scope-text">
+          <div class="scope-name">Google Drive (drive.file scope)</div>
+          <div class="scope-detail">Bookiry will only create and manage its own <code>Bookiry/</code> folder. We cannot view, access, or modify any of your other Google Drive files.</div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-confirm-google-auth" id="btnConfirmGoogleAuth">
+        <span id="btnAuthText">Authorize & Connect Drive</span>
+      </button>
+
+      <div class="auth-modal-security">
+        🔒 Zero server database. Your thoughts belong entirely to you.
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal: Gemini API Key & Google Cloud Client ID -->
+  <div class="auth-modal-overlay" id="settingsModal" style="display: none;">
+    <div class="auth-modal-card" style="max-width: 500px;">
+      <div class="auth-modal-header">
+        <div class="google-logo-wrap">
+          <span style="font-size: 1.25rem;">⚙️</span>
+          <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-left: 6px;">AI & Cloud Settings</span>
+        </div>
+        <button type="button" class="btn-auth-modal-close" id="btnSettingsModalClose" title="Close">×</button>
+      </div>
+
+      <h3 class="auth-modal-title">Configure Intelligence & Cloud</h3>
+      <p class="auth-modal-desc">
+        Connect your free Gemini API key to unlock deep, book-specific catalytic questions, and configure Google Drive sync.
+      </p>
+
+      <!-- Gemini API Key Section -->
+      <div class="settings-form-group">
+        <label for="inputGeminiApiKey" class="settings-label">
+          <span>✨ Google Gemini API Key</span>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="settings-link-hint">Get Free Key (1,500/day) ↗</a>
+        </label>
+        <input type="password" id="inputGeminiApiKey" class="settings-input" placeholder="AIzaSy..." autocomplete="off">
+        <p class="settings-hint">Enables deep Socratic questions by reading actual book synopsis and author thesis. Stored safely in your browser's localStorage.</p>
+      </div>
+
+      <!-- Google OAuth Client ID Section -->
+      <div class="settings-form-group" style="margin-top: 16px;">
+        <label for="inputGoogleClientId" class="settings-label">
+          <span>📁 Google OAuth Client ID (Web)</span>
+          <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" class="settings-link-hint">Cloud Console ↗</a>
+        </label>
+        <input type="text" id="inputGoogleClientId" class="settings-input" placeholder="your-client-id.apps.googleusercontent.com" autocomplete="off">
+        <p class="settings-hint">Required for direct Google Drive sync. Leave blank to use local simulation mode or configure your project Client ID.</p>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 10px;">
+        <button type="button" class="btn-confirm-google-auth" id="btnSaveSettings" style="flex: 1;">
+          <span>Save Configuration</span>
+        </button>
+      </div>
+
+      <div class="auth-modal-security" style="margin-top: 14px;">
+        🔒 Private BYOK architecture. Keys never leave your client browser.
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <!-- Core App Logic with Cache Buster -->
+  <script src="js/app.js?v=20260927_1"></script>
+</body>
+</html>

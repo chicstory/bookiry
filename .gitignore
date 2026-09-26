@@ -1,0 +1,10 @@
+# Dependencies & Environment
+.env
+.env.*
+node_modules/
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
