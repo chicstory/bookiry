@@ -1917,7 +1917,7 @@ function generateDynamic4Sparks(title, compass, customIntent = '') {
   return dynamicSparks[compass] || dynamicSparks['healing'];
 }
 
-// Load Reflections Timeline from localStorage
+// Load Reflections Timeline from localStorage & Cloud Drive Pull
 function loadTimeline(slug) {
   const timelineList = document.getElementById('timelineList');
   const countEl = document.getElementById('timelineCount');
@@ -1928,6 +1928,11 @@ function loadTimeline(slug) {
 
   renderTimelineItems(saved);
   if (countEl) countEl.textContent = `${saved.length} thought${saved.length === 1 ? '' : 's'}`;
+
+  // Silently pull any reflections from Google Drive (Cross-device sync)
+  if (currentActiveBook && currentActiveBook.slug === slug) {
+    pullReflectionsFromDriveSilently(currentActiveBook);
+  }
 }
 
 // Render Timeline Items
@@ -2638,6 +2643,108 @@ function autoSyncToDriveSilently() {
   if (user && currentActiveBook) {
     syncCurrentBookToDrive(false, false);
   }
+}
+
+// Cross-device Pull: Download 00_Index.md from Drive and merge thoughts into local UI
+async function pullReflectionsFromDriveSilently(book) {
+  const token = localStorage.getItem(STORAGE_KEY_GOOGLE_TOKEN);
+  if (!token || !book) return;
+
+  try {
+    const rootFolderId = await findOrCreateDriveFolder('Bookiry');
+    if (!rootFolderId) return;
+
+    const yearFolderId = await findOrCreateDriveFolder(`${new Date().getFullYear()}`, rootFolderId);
+    if (!yearFolderId) return;
+
+    const safeAuthor = book.author || 'Unknown';
+    const bookFolderName = `${book.title} - ${safeAuthor}`;
+    const bookFolderId = await findOrCreateDriveFolder(bookFolderName, yearFolderId);
+    if (!bookFolderId) return;
+
+    // Search for existing 00_Index.md in this book folder
+    const query = `name = '00_Index.md' and '${bookFolderId}' in parents and trashed = false`;
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,webViewLink)`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.files || data.files.length === 0) return;
+
+    const file = data.files[0];
+
+    // Download content
+    const contentRes = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!contentRes.ok) return;
+    const md = await contentRes.text();
+
+    // Parse reflections lines
+    const parsedReflections = parseReflectionsFromMarkdown(md);
+    if (parsedReflections.length === 0) return;
+
+    // Merge with local storage
+    const storageKey = `bookiry_reflections_${book.slug}`;
+    const local = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    let changed = false;
+    const merged = [...local];
+
+    for (const remoteItem of parsedReflections) {
+      const exists = merged.some(m => m.text.trim() === remoteItem.text.trim());
+      if (!exists) {
+        merged.push(remoteItem);
+        changed = true;
+      }
+    }
+
+    if (changed || local.length < parsedReflections.length) {
+      localStorage.setItem(storageKey, JSON.stringify(merged));
+      const timelineList = document.getElementById('timelineList');
+      const countEl = document.getElementById('timelineCount');
+      if (timelineList) renderTimelineItems(merged);
+      if (countEl) countEl.textContent = `${merged.length} thought${merged.length === 1 ? '' : 's'}`;
+    }
+
+    // Update Drive ↗ link in UI
+    const linkOpenDrive = document.getElementById('linkOpenDriveFile');
+    if (linkOpenDrive && file.webViewLink) {
+      linkOpenDrive.href = file.webViewLink;
+      linkOpenDrive.style.display = 'inline-flex';
+    }
+  } catch (err) {
+    console.warn('Failed to pull reflections from drive:', err);
+  }
+}
+
+function parseReflectionsFromMarkdown(mdContent) {
+  if (!mdContent) return [];
+  const lines = mdContent.split('\n');
+  const reflections = [];
+  let inReflections = false;
+
+  for (const line of lines) {
+    if (line.includes('## ✍️ My Reflections')) {
+      inReflections = true;
+      continue;
+    }
+    if (inReflections) {
+      if (line.startsWith('---') || (line.startsWith('#') && !line.includes('My Reflections'))) {
+        break;
+      }
+      const match = line.match(/^-\s*\*\*([^\*]+)\*\*\s*(.+)$/);
+      if (match) {
+        reflections.push({
+          time: match[1].trim(),
+          text: match[2].trim(),
+          timestamp: Date.now()
+        });
+      }
+    }
+  }
+  return reflections;
 }
 
 // --------------------------------------------------------------------------
