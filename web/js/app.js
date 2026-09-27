@@ -1383,14 +1383,27 @@ async function fetchLiveBookSuggestions(query) {
     }
   });
 
-  // 2. Query External Book APIs (Open Library + Google Books fallback)
+  // Guard: If query is too short, return curated without hitting external APIs (prevents 422 & 429)
+  if (!cleanQuery || cleanQuery.length < 2) {
+    renderAutocompleteDropdown(matchedCurated);
+    return;
+  }
+
+  // 2. Query External Book APIs (Open Library + Google Books fallback with cache)
+  if (!window._bookSearchCache) window._bookSearchCache = new Map();
+  if (window._bookSearchCache.has(cleanQuery)) {
+    renderAutocompleteDropdown(window._bookSearchCache.get(cleanQuery));
+    return;
+  }
+
   let catalogBooks = [];
   try {
-    const openLibPromise = fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=6`)
+    const encodedQ = encodeURIComponent(query.trim());
+    const openLibPromise = fetch(`https://openlibrary.org/search.json?q=${encodedQ}&limit=6`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null);
 
-    const googleBooksPromise = fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5`)
+    const googleBooksPromise = fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodedQ}&maxResults=5`)
       .then(r => r.ok ? r.json() : null)
       .catch(() => null);
 
@@ -1720,22 +1733,35 @@ function triggerBookCompass(query, pushHistory = true, preResolvedBook = null) {
 // Real-time Intelligence: Google Books Synopsis & Gemini Flash API
 // --------------------------------------------------------------------------
 async function fetchBookSynopsis(title, author = '') {
+  if (!window._synopsisCache) window._synopsisCache = new Map();
+  const query = `${title} ${author}`.trim().toLowerCase();
+  if (window._synopsisCache.has(query)) {
+    return window._synopsisCache.get(query);
+  }
+
   try {
-    const query = `${title} ${author}`.trim();
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=3`);
-    if (!res.ok) return '';
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=2`);
+    if (!res.ok) {
+      window._synopsisCache.set(query, '');
+      return '';
+    }
     const data = await res.json();
-    if (!data.items || data.items.length === 0) return '';
+    if (!data.items || data.items.length === 0) {
+      window._synopsisCache.set(query, '');
+      return '';
+    }
 
     for (const item of data.items) {
       const vol = item.volumeInfo;
       if (vol && vol.description) {
+        window._synopsisCache.set(query, vol.description);
         return vol.description;
       }
     }
+    window._synopsisCache.set(query, '');
     return '';
   } catch (err) {
-    console.warn('Google Books synopsis fetch error:', err);
+    window._synopsisCache.set(query, '');
     return '';
   }
 }
@@ -1800,9 +1826,12 @@ CRITICAL RULES:
             return parsed;
           }
         }
+      } else if (res.status === 404 || res.status === 400) {
+        // Obsolete or invalid local key - silently purge to prevent persistent 404 spam
+        localStorage.removeItem(STORAGE_KEY_GEMINI_KEY);
       }
     } catch (err) {
-      console.warn('Local Gemini API call failed, falling back to Cloudflare Worker:', err);
+      // Quietly fall through to Cloudflare Worker
     }
   }
 
@@ -1827,7 +1856,7 @@ CRITICAL RULES:
       }
     }
   } catch (workerErr) {
-    console.warn('Cloudflare Worker sparks proxy failed:', workerErr);
+    // Quietly failover to built-in dynamic sparks
   }
 
   return null;
