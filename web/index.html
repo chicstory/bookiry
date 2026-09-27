@@ -80,11 +80,6 @@
           <span class="user-email-text" id="userEmailText">reader@gmail.com</span>
           <button type="button" class="btn-logout-mini" id="btnLogoutMini" title="Sign out">×</button>
         </div>
-
-        <!-- AI & Cloud Settings Button -->
-        <button type="button" class="btn-nav btn-settings-nav" id="btnSettingsNav" title="Configure Gemini AI & Google Drive">
-          <span>⚙️</span>
-        </button>
       </nav>
     </div>
   </header>
@@ -1111,56 +1106,8 @@
     </div>
   </div>
 
-  <!-- Settings Modal: Gemini API Key & Google Cloud Client ID -->
-  <div class="auth-modal-overlay" id="settingsModal" style="display: none;">
-    <div class="auth-modal-card" style="max-width: 500px;">
-      <div class="auth-modal-header">
-        <div class="google-logo-wrap">
-          <span style="font-size: 1.25rem;">⚙️</span>
-          <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-left: 6px;">AI & Cloud Settings</span>
-        </div>
-        <button type="button" class="btn-auth-modal-close" id="btnSettingsModalClose" title="Close">×</button>
-      </div>
-
-      <h3 class="auth-modal-title">Configure Intelligence & Cloud</h3>
-      <p class="auth-modal-desc">
-        Connect your free Gemini API key to unlock deep, book-specific catalytic questions, and configure Google Drive sync.
-      </p>
-
-      <!-- Gemini API Key Section -->
-      <div class="settings-form-group">
-        <label for="inputGeminiApiKey" class="settings-label">
-          <span>✨ Google Gemini API Key</span>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="settings-link-hint">Get Free Key (1,500/day) ↗</a>
-        </label>
-        <input type="password" id="inputGeminiApiKey" class="settings-input" placeholder="AIzaSy..." autocomplete="off">
-        <p class="settings-hint">Enables deep Socratic questions by reading actual book synopsis and author thesis. Stored safely in your browser's localStorage.</p>
-      </div>
-
-      <!-- Google OAuth Client ID Section -->
-      <div class="settings-form-group" style="margin-top: 16px;">
-        <label for="inputGoogleClientId" class="settings-label">
-          <span>📁 Google OAuth Client ID (Web)</span>
-          <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" class="settings-link-hint">Cloud Console ↗</a>
-        </label>
-        <input type="text" id="inputGoogleClientId" class="settings-input" placeholder="your-client-id.apps.googleusercontent.com" autocomplete="off">
-        <p class="settings-hint">Required for direct Google Drive sync. Leave blank to use local simulation mode or configure your project Client ID.</p>
-      </div>
-
-      <div style="margin-top: 24px; display: flex; gap: 10px;">
-        <button type="button" class="btn-confirm-google-auth" id="btnSaveSettings" style="flex: 1;">
-          <span>Save Configuration</span>
-        </button>
-      </div>
-
-      <div class="auth-modal-security" style="margin-top: 14px;">
-        🔒 Private BYOK architecture. Keys never leave your client browser.
-      </div>
-    </div>
-  </div>
-
   <!-- Scripts -->
   <!-- Core App Logic with Cache Buster -->
-  <script src="js/app.js?v=20260927_worker2"></script>
+  <script src="js/app.js?v=20260927_clean1"></script>
 </body>
 </html>
