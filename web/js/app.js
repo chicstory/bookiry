@@ -1888,16 +1888,8 @@ async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
     // Auto-update Drive file with new deep sparks
     autoSyncToDriveSilently();
   } else {
-    // Fallback: If both direct key and worker aren't active, show optional BYOK invitation
-    if (!localApiKey && banner && bannerText) {
-      bannerText.innerHTML = `<span>💡 Connect your free Gemini API key in <strong>⚙️ Settings</strong> to unlock deep, book-specific Socratic questions.</span> <button type="button" class="btn-banner-settings" id="btnBannerOpenSettings">Set Key ➔</button>`;
-      banner.style.display = 'flex';
-      banner.style.background = '#F8FAFC';
-      banner.style.borderColor = '#CBD5E1';
-      banner.style.color = '#475569';
-      banner.style.cursor = 'pointer';
-      banner.onclick = () => openSettingsModal();
-    } else if (banner) {
+    // If worker generation is taking time or failed, gracefully hide the banner (built-in sparks already active)
+    if (banner) {
       banner.style.display = 'none';
     }
   }
