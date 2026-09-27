@@ -1730,38 +1730,47 @@ function triggerBookCompass(query, pushHistory = true, preResolvedBook = null) {
 }
 
 // --------------------------------------------------------------------------
-// Real-time Intelligence: Google Books Synopsis & Gemini Flash API
+// Real-time Intelligence: Google Books Synopsis & Cloudflare Worker
 // --------------------------------------------------------------------------
 async function fetchBookSynopsis(title, author = '') {
-  if (!window._synopsisCache) window._synopsisCache = new Map();
-  const query = `${title} ${author}`.trim().toLowerCase();
-  if (window._synopsisCache.has(query)) {
-    return window._synopsisCache.get(query);
+  // 1. Instant check against local curated database (0ms, avoids Google Books 429)
+  const cleanTitle = (title || '').toLowerCase().trim();
+  const curatedMatch = Object.values(BOOK_DATABASE).find(b => (b.title || '').toLowerCase() === cleanTitle);
+  if (curatedMatch && curatedMatch.synopsis) {
+    return curatedMatch.synopsis;
   }
 
+  // 2. Check in-memory cache
+  if (!window._synopsisCache) window._synopsisCache = new Map();
+  const cacheKey = `${cleanTitle} ${(author || '').toLowerCase().trim()}`.trim();
+  if (window._synopsisCache.has(cacheKey)) {
+    return window._synopsisCache.get(cacheKey);
+  }
+
+  // 3. Fallback to Google Books for unknown custom books
   try {
-    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=2`);
+    const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(cacheKey)}&maxResults=2`);
     if (!res.ok) {
-      window._synopsisCache.set(query, '');
+      window._synopsisCache.set(cacheKey, '');
       return '';
     }
     const data = await res.json();
     if (!data.items || data.items.length === 0) {
-      window._synopsisCache.set(query, '');
+      window._synopsisCache.set(cacheKey, '');
       return '';
     }
 
     for (const item of data.items) {
       const vol = item.volumeInfo;
       if (vol && vol.description) {
-        window._synopsisCache.set(query, vol.description);
+        window._synopsisCache.set(cacheKey, vol.description);
         return vol.description;
       }
     }
-    window._synopsisCache.set(query, '');
+    window._synopsisCache.set(cacheKey, '');
     return '';
   } catch (err) {
-    window._synopsisCache.set(query, '');
+    window._synopsisCache.set(cacheKey, '');
     return '';
   }
 }
@@ -1770,72 +1779,10 @@ async function fetchBookSynopsis(title, author = '') {
 const CLOUDFLARE_WORKER_URL = 'https://bookiry-worker.chicstory.workers.dev';
 
 async function generateSparksWithGemini(bookTitle, bookAuthor, synopsis, compass, customIntent = '') {
-  const localApiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
+  // Purge any legacy BYOK key from browser to keep environment 100% clean
+  localStorage.removeItem(STORAGE_KEY_GEMINI_KEY);
 
-  // 1. If user provided their own key, call Gemini directly (BYOK)
-  if (localApiKey) {
-    const compassGuidelines = {
-      'healing': 'Focus on quiet mental refuge, easing burnout/anxiety, surrendering self-judgment, and finding grounded stillness.',
-      'growth': 'Focus on unvarnished business reality, operational bottlenecks, counter-intuitive leverage, and concrete 1% behavioral change.',
-      'fiction': 'Focus on existential subtext, the protagonist moral crossroads, raw human loneliness, and poetic turning points of fate.',
-      'custom': `Focus with laser precision through the reader's personal quest: "${customIntent}". Connect the book's core theory directly to solving or evolving this quest.`
-    };
-    const compassHint = compassGuidelines[compass] || compassGuidelines['healing'];
-    const prompt = `You are a world-class Socratic reading coach and cognitive catalyst.
-Analyze the following book and generate 4 deep, challenging catalytic reading questions (The 4 Sparks) tailored to the reader's compass.
-
-Book Title: "${bookTitle}"
-Author: "${bookAuthor || 'Unknown'}"
-Book Synopsis / Key Themes:
-${synopsis ? synopsis.slice(0, 1500) : 'General knowledge of the book'}
-
-Reader Compass / Direction: ${compass.toUpperCase()} (${compassHint})
-${customIntent ? `Reader's Specific Problem/Quest: "${customIntent}"` : ''}
-
-CRITICAL RULES:
-1. DO NOT summarize the plot or give generic school-essay questions.
-2. Directly reference specific concepts, philosophies, metaphors, or terms from this specific book.
-3. Every question must be punchy, thought-provoking, and impossible to answer with a simple yes/no.
-4. Return ONLY a valid JSON object strictly matching this schema:
-{
-  "spark": "Before opening page 1: A question shattering an existing comfort zone or bias using the book's core premise.",
-  "lens": "During reading: An observational question highlighting a specific nuanced concept or argument from the text.",
-  "quest": "Counter-question: A challenging dilemma where the author's radical thesis collides with everyday reality.",
-  "echo": "After closing: A single concrete micro-action or mental shift to test tomorrow morning."
-}`;
-
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            response_mime_type: 'application/json',
-            temperature: 0.7
-          }
-        })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawText) {
-          const parsed = JSON.parse(rawText);
-          if (parsed.spark && parsed.lens && parsed.quest && parsed.echo) {
-            return parsed;
-          }
-        }
-      } else if (res.status === 404 || res.status === 400) {
-        // Obsolete or invalid local key - silently purge to prevent persistent 404 spam
-        localStorage.removeItem(STORAGE_KEY_GEMINI_KEY);
-      }
-    } catch (err) {
-      // Quietly fall through to Cloudflare Worker
-    }
-  }
-
-  // 2. Call Cloudflare Worker Edge Proxy (Keyless for readers)
+  // Call Cloudflare Worker Edge Proxy (Keyless for readers)
   try {
     const res = await fetch(`${CLOUDFLARE_WORKER_URL}/api/sparks`, {
       method: 'POST',
@@ -1863,7 +1810,11 @@ CRITICAL RULES:
 }
 
 async function checkAndTriggerAISparks(bookData, compass, customIntent = '') {
-  const localApiKey = localStorage.getItem(STORAGE_KEY_GEMINI_KEY);
+  // If bookData already has rich curated sparks, skip remote worker calls completely (0ms, 0 errors)
+  if (bookData.sparks && bookData.sparks.spark && bookData.sparks.lens && !customIntent) {
+    return;
+  }
+
   const banner = document.getElementById('aiSparksBanner');
   const bannerText = document.getElementById('aiSparksBannerText');
 
